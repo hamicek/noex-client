@@ -26,6 +26,8 @@ export type {
   PaginatedResult,
   TransactionOp,
   TransactionResult,
+  BucketsInfo,
+  StoreStats,
   RulesEvent,
   Fact,
   AuthSession,

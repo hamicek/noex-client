@@ -56,6 +56,37 @@ export interface TransactionResult {
   readonly results: ReadonlyArray<{ readonly index: number; readonly data: unknown }>;
 }
 
+// ── Store stats ──────────────────────────────────────────────────
+
+export interface BucketsInfo {
+  readonly count: number;
+  readonly names: readonly string[];
+}
+
+export interface StoreStats {
+  readonly name: string;
+  readonly buckets: BucketsInfo;
+  readonly records: {
+    readonly total: number;
+    readonly perBucket: Readonly<Record<string, number>>;
+  };
+  readonly indexes: {
+    readonly total: number;
+    readonly perBucket: Readonly<Record<string, number>>;
+  };
+  readonly queries: {
+    readonly defined: number;
+    readonly activeSubscriptions: number;
+  };
+  readonly persistence: {
+    readonly enabled: boolean;
+  };
+  readonly ttl: {
+    readonly enabled: boolean;
+    readonly checkIntervalMs: number;
+  };
+}
+
 // ── Rules ────────────────────────────────────────────────────────
 
 export interface RulesEvent {

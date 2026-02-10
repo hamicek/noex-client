@@ -1,5 +1,5 @@
 import type { SubscriptionManager } from '../subscription/subscription-manager.js';
-import type { SendFn, TransactionOp, TransactionResult, Unsubscribe } from '../types.js';
+import type { BucketsInfo, SendFn, StoreStats, TransactionOp, TransactionResult, Unsubscribe } from '../types.js';
 import { BucketAPI } from './bucket.js';
 
 export class StoreAPI {
@@ -65,5 +65,15 @@ export class StoreAPI {
 
   async transaction(operations: TransactionOp[]): Promise<TransactionResult> {
     return this.send('store.transaction', { operations } as Record<string, unknown>) as Promise<TransactionResult>;
+  }
+
+  // ── Metadata ─────────────────────────────────────────────────────
+
+  async buckets(): Promise<BucketsInfo> {
+    return this.send('store.buckets', {}) as Promise<BucketsInfo>;
+  }
+
+  async stats(): Promise<StoreStats> {
+    return this.send('store.stats', {}) as Promise<StoreStats>;
   }
 }

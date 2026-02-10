@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import WebSocket from 'ws';
-import { NoexClient, NoexClientError } from '../../src/index.js';
+import { NoexClient, NoexClientError, type BucketsInfo, type StoreStats } from '../../src/index.js';
 import { startTestServer, type TestServerContext } from './helpers/test-server.js';
 
 describe('Integration: Store CRUD', () => {
@@ -341,5 +341,43 @@ describe('Integration: Store CRUD', () => {
 
     const all = await users.all();
     expect(all).toHaveLength(5);
+  });
+
+  // ── buckets ──────────────────────────────────────────────────────
+
+  it('should return bucket info with count and names', async () => {
+    const info: BucketsInfo = await client.store.buckets();
+
+    expect(info.count).toBe(2);
+    expect([...info.names].sort()).toEqual(['products', 'users']);
+  });
+
+  // ── stats ────────────────────────────────────────────────────────
+
+  it('should return store stats with empty buckets', async () => {
+    const stats: StoreStats = await client.store.stats();
+
+    expect(stats.buckets.count).toBe(2);
+    expect([...stats.buckets.names].sort()).toEqual(['products', 'users']);
+    expect(stats.records.total).toBe(0);
+    expect(typeof stats.name).toBe('string');
+    expect(typeof stats.queries).toBe('object');
+    expect(typeof stats.persistence).toBe('object');
+    expect(typeof stats.ttl).toBe('object');
+  });
+
+  it('should reflect inserted records in stats', async () => {
+    const users = client.store.bucket('users');
+    await users.insert({ name: 'Alice' });
+    await users.insert({ name: 'Bob' });
+
+    const products = client.store.bucket('products');
+    await products.insert({ title: 'Widget', price: 10 });
+
+    const stats: StoreStats = await client.store.stats();
+
+    expect(stats.records.total).toBe(3);
+    expect(stats.records.perBucket['users']).toBe(2);
+    expect(stats.records.perBucket['products']).toBe(1);
   });
 });
