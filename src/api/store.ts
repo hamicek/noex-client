@@ -8,8 +8,8 @@ export class StoreAPI {
     private readonly subscriptions: SubscriptionManager,
   ) {}
 
-  bucket(name: string): BucketAPI {
-    return new BucketAPI(name, this.send);
+  bucket<T extends Record<string, unknown> = Record<string, unknown>>(name: string): BucketAPI<T> {
+    return new BucketAPI<T>(name, this.send);
   }
 
   // ── Subscriptions ─────────────────────────────────────────────

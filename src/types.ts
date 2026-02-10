@@ -28,8 +28,15 @@ export type WebSocketConstructor = new (url: string) => WebSocketLike;
 
 export type StoreRecord = Record<string, unknown>;
 
-export interface PaginatedResult {
-  readonly records: StoreRecord[];
+export interface RecordMeta {
+  readonly id: string;
+  readonly _version: number;
+  readonly _createdAt: number;
+  readonly _updatedAt: number;
+}
+
+export interface PaginatedResult<T extends Record<string, unknown> = Record<string, unknown>> {
+  readonly records: (T & RecordMeta)[];
   readonly hasMore: boolean;
   readonly nextCursor?: unknown;
 }

@@ -22,6 +22,7 @@ export type {
   WebSocketLike,
   WebSocketConstructor,
   StoreRecord,
+  RecordMeta,
   PaginatedResult,
   TransactionOp,
   TransactionResult,
