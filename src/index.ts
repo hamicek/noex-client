@@ -7,6 +7,7 @@ export { NoexClient } from './client.js';
 export { StoreAPI } from './api/store.js';
 export { BucketAPI } from './api/bucket.js';
 export { RulesAPI } from './api/rules.js';
+export { AuthAPI } from './api/auth.js';
 
 // ── Config ───────────────────────────────────────────────────────
 
@@ -26,6 +27,7 @@ export type {
   TransactionResult,
   RulesEvent,
   Fact,
+  AuthSession,
 } from './types.js';
 
 // ── Errors ───────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { Store } from '@hamicek/noex-store';
 import { NoexServer } from '@hamicek/noex-server';
+import type { AuthConfig } from '@hamicek/noex-server';
 import type { RuleEngine } from '@hamicek/noex-rules';
 
 export interface TestServerContext {
@@ -18,6 +19,7 @@ export async function startTestServer(
     port?: number;
     buckets?: Array<{ name: string; schema: Record<string, unknown> }>;
     rules?: RuleEngine;
+    auth?: AuthConfig;
   },
 ): Promise<TestServerContext> {
   const store = await Store.start({ name: `client-test-${++storeCounter}` });
@@ -37,6 +39,7 @@ export async function startTestServer(
   const server = await NoexServer.start({
     store,
     rules: options?.rules,
+    auth: options?.auth,
     port: options?.port ?? 0,
     host: '127.0.0.1',
   });

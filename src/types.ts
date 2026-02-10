@@ -69,6 +69,15 @@ export interface Fact {
   readonly version: number;
 }
 
+// ── Auth ─────────────────────────────────────────────────────────
+
+export interface AuthSession {
+  readonly userId: string;
+  readonly roles: readonly string[];
+  readonly metadata?: Record<string, unknown>;
+  readonly expiresAt?: number;
+}
+
 // ── Internal ──────────────────────────────────────────────────────
 
 export type SendFn = (type: string, payload: Record<string, unknown>) => Promise<unknown>;

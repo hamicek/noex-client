@@ -1,3 +1,4 @@
+import { AuthAPI } from './api/auth.js';
 import { RulesAPI } from './api/rules.js';
 import { StoreAPI } from './api/store.js';
 import type { ClientOptions } from './config.js';
@@ -25,6 +26,7 @@ export class NoexClient {
   readonly url: string;
   readonly store: StoreAPI;
   readonly rules: RulesAPI;
+  readonly auth: AuthAPI;
   private readonly options: ClientOptions;
   private readonly transport: WebSocketTransport;
   private readonly requestManager: RequestManager;
@@ -58,6 +60,7 @@ export class NoexClient {
 
     this.store = new StoreAPI(this.request.bind(this), this.subscriptionManager);
     this.rules = new RulesAPI(this.request.bind(this), this.subscriptionManager);
+    this.auth = new AuthAPI(this.request.bind(this));
 
     this.setupTransportListeners();
   }
@@ -98,6 +101,11 @@ export class NoexClient {
     }
 
     this._state = 'connected';
+
+    if (this.options.auth?.token && welcome.requiresAuth) {
+      await this.auth.login(this.options.auth.token);
+    }
+
     this.emit('connected');
     this.emit('welcome', welcome);
 
