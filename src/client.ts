@@ -1,3 +1,4 @@
+import { StoreAPI } from './api/store.js';
 import type { ClientOptions } from './config.js';
 import { DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_REQUEST_TIMEOUT_MS } from './config.js';
 import { DisconnectedError } from './errors.js';
@@ -19,6 +20,7 @@ interface ClientEventMap {
 export class NoexClient {
   /** @internal Stored for reconnect logic. */
   readonly url: string;
+  readonly store: StoreAPI;
   private readonly options: ClientOptions;
   private readonly transport: WebSocketTransport;
   private readonly requestManager: RequestManager;
@@ -41,6 +43,8 @@ export class NoexClient {
     this.requestManager = new RequestManager({
       timeoutMs: options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
     });
+
+    this.store = new StoreAPI(this.request.bind(this));
 
     this.setupTransportListeners();
   }

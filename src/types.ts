@@ -24,6 +24,20 @@ export interface WebSocketLike {
 
 export type WebSocketConstructor = new (url: string) => WebSocketLike;
 
+// ── Store ─────────────────────────────────────────────────────────
+
+export type StoreRecord = Record<string, unknown>;
+
+export interface PaginatedResult {
+  readonly records: StoreRecord[];
+  readonly hasMore: boolean;
+  readonly nextCursor?: unknown;
+}
+
+// ── Internal ──────────────────────────────────────────────────────
+
+export type SendFn = (type: string, payload: Record<string, unknown>) => Promise<unknown>;
+
 // ── Protocol ─────────────────────────────────────────────────────
 
 export interface ServerMessage {

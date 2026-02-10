@@ -2,6 +2,11 @@
 
 export { NoexClient } from './client.js';
 
+// ── API ──────────────────────────────────────────────────────────
+
+export { StoreAPI } from './api/store.js';
+export { BucketAPI } from './api/bucket.js';
+
 // ── Config ───────────────────────────────────────────────────────
 
 export type { ClientOptions, ReconnectOptions } from './config.js';
@@ -14,6 +19,8 @@ export type {
   WelcomeInfo,
   WebSocketLike,
   WebSocketConstructor,
+  StoreRecord,
+  PaginatedResult,
 } from './types.js';
 
 // ── Errors ───────────────────────────────────────────────────────
