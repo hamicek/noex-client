@@ -2,7 +2,9 @@ import { StoreAPI } from './api/store.js';
 import type { ClientOptions } from './config.js';
 import { DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_REQUEST_TIMEOUT_MS } from './config.js';
 import { DisconnectedError } from './errors.js';
+import { PushRouter } from './protocol/push-router.js';
 import { RequestManager } from './protocol/request-manager.js';
+import { SubscriptionManager } from './subscription/subscription-manager.js';
 import { WebSocketTransport } from './transport/transport.js';
 import type { ConnectionState, Unsubscribe, WelcomeInfo, WebSocketConstructor } from './types.js';
 
@@ -24,6 +26,8 @@ export class NoexClient {
   private readonly options: ClientOptions;
   private readonly transport: WebSocketTransport;
   private readonly requestManager: RequestManager;
+  private readonly subscriptionManager: SubscriptionManager;
+  private readonly pushRouter: PushRouter;
   private _state: ConnectionState = 'disconnected';
   private listeners = new Map<string, Set<(...args: never[]) => void>>();
   private intentionalDisconnect = false;
@@ -44,7 +48,13 @@ export class NoexClient {
       timeoutMs: options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
     });
 
-    this.store = new StoreAPI(this.request.bind(this));
+    this.subscriptionManager = new SubscriptionManager();
+
+    this.pushRouter = new PushRouter(
+      (subscriptionId, _channel, data) => this.subscriptionManager.handlePush(subscriptionId, data),
+    );
+
+    this.store = new StoreAPI(this.request.bind(this), this.subscriptionManager);
 
     this.setupTransportListeners();
   }
@@ -94,6 +104,7 @@ export class NoexClient {
   async disconnect(): Promise<void> {
     this.intentionalDisconnect = true;
     this.requestManager.rejectAll(new DisconnectedError('Client disconnecting'));
+    this.subscriptionManager.clear();
     await this.transport.disconnect();
     this._state = 'disconnected';
   }
@@ -167,9 +178,13 @@ export class NoexClient {
       return;
     }
 
-    // Welcome messages are handled by waitForWelcome via its own listener,
-    // so we don't need special handling here. Push and system messages
-    // will be handled in later iterations (SubscriptionManager, etc.).
+    // Route push messages to subscription callbacks
+    if (this.pushRouter.handleMessage(msg)) {
+      return;
+    }
+
+    // Welcome messages are handled by waitForWelcome via its own listener.
+    // System messages are currently ignored.
   }
 
   private waitForWelcome(): Promise<WelcomeInfo> {
