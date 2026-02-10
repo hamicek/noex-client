@@ -131,6 +131,43 @@ describe('WebSocketTransport', () => {
     });
   });
 
+  describe('connect — idempotency', () => {
+    it('should be a no-op when already connected', async () => {
+      const transport = new WebSocketTransport('ws://localhost:8080', defaultOpts);
+
+      const p = transport.connect();
+      lastMockWS().simulateOpen();
+      await p;
+
+      expect(transport.state).toBe('connected');
+      expect(MockWebSocket.instances).toHaveLength(1);
+
+      // Second connect should not create another WebSocket
+      await transport.connect();
+      expect(MockWebSocket.instances).toHaveLength(1);
+      expect(transport.state).toBe('connected');
+    });
+
+    it('should be a no-op when connecting is in progress', async () => {
+      const transport = new WebSocketTransport('ws://localhost:8080', defaultOpts);
+
+      const p1 = transport.connect();
+      expect(transport.state).toBe('connecting');
+
+      // Second connect while first is pending
+      const p2 = transport.connect();
+
+      // Should not create a second WebSocket
+      expect(MockWebSocket.instances).toHaveLength(1);
+
+      lastMockWS().simulateOpen();
+      await p1;
+      await p2;
+
+      expect(transport.state).toBe('connected');
+    });
+  });
+
   describe('disconnect', () => {
     it('should close the socket and transition to disconnected', async () => {
       const transport = new WebSocketTransport('ws://localhost:8080', defaultOpts);
@@ -224,6 +261,38 @@ describe('WebSocketTransport', () => {
       expect(lastMockWS().sent).toHaveLength(0);
 
       // Message IS emitted
+      expect(onMessage).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('heartbeat edge cases', () => {
+    it('should not crash on non-JSON ping-like data', async () => {
+      const transport = new WebSocketTransport('ws://localhost:8080', defaultOpts);
+      const onMessage = vi.fn();
+      transport.on('message', onMessage);
+
+      const p = transport.connect();
+      lastMockWS().simulateOpen();
+      await p;
+
+      // Non-JSON data should pass through as regular message
+      lastMockWS().simulateMessage('not json at all');
+      expect(onMessage).toHaveBeenCalledWith('not json at all');
+      expect(lastMockWS().sent).toHaveLength(0);
+    });
+
+    it('should not auto-reply to ping without timestamp', async () => {
+      const transport = new WebSocketTransport('ws://localhost:8080', defaultOpts);
+      const onMessage = vi.fn();
+      transport.on('message', onMessage);
+
+      const p = transport.connect();
+      lastMockWS().simulateOpen();
+      await p;
+
+      // Ping with non-number timestamp — should NOT auto-reply, just pass through
+      lastMockWS().simulateMessage('{"type":"ping","timestamp":"not-a-number"}');
+      expect(lastMockWS().sent).toHaveLength(0);
       expect(onMessage).toHaveBeenCalledOnce();
     });
   });

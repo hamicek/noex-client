@@ -181,6 +181,59 @@ describe('RequestManager', () => {
     });
   });
 
+  describe('handleMessage — unknown response type', () => {
+    it('should reject with error for unexpected response type', async () => {
+      const promise = manager.send(transport as never, 'store.get', { bucket: 'x', key: '1' });
+
+      const handled = manager.handleMessage({
+        id: 1,
+        type: 'something_weird',
+        data: null,
+      });
+
+      expect(handled).toBe(true);
+      expect(manager.pendingCount).toBe(0);
+
+      await expect(promise).rejects.toThrow('Unexpected response type: something_weird');
+    });
+  });
+
+  describe('handleMessage — error defaults', () => {
+    it('should use default code and message when missing from error', async () => {
+      const promise = manager.send(transport as never, 'store.get', { bucket: 'x', key: '1' });
+
+      manager.handleMessage({
+        id: 1,
+        type: 'error',
+        // No 'code' or 'message' fields
+      });
+
+      try {
+        await promise;
+        expect.unreachable('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(NoexClientError);
+        expect((err as NoexClientError).code).toBe('UNKNOWN');
+        expect((err as NoexClientError).message).toBe('Unknown server error');
+      }
+    });
+  });
+
+  describe('handleMessage — non-number id', () => {
+    it('should ignore messages with string id', () => {
+      manager.send(transport as never, 'store.get', { bucket: 'x', key: '1' });
+
+      const handled = manager.handleMessage({
+        id: '1', // string, not number
+        type: 'result',
+        data: null,
+      });
+
+      expect(handled).toBe(false);
+      expect(manager.pendingCount).toBe(1);
+    });
+  });
+
   describe('rejectAll', () => {
     it('should reject all pending requests', async () => {
       const p1 = manager.send(transport as never, 'store.get', { bucket: 'a', key: '1' });

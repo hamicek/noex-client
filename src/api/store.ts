@@ -46,8 +46,15 @@ export class StoreAPI {
       resubscribe: { type: 'store.subscribe', payload },
     });
 
-    // Deliver initial data synchronously after registration
-    callback(result.data);
+    // Deliver initial data synchronously after registration.
+    // If the callback throws, clean up the subscription to avoid a leak.
+    try {
+      callback(result.data);
+    } catch (err) {
+      this.subscriptions.unregister(result.subscriptionId);
+      this.send('store.unsubscribe', { subscriptionId: result.subscriptionId }).catch(() => {});
+      throw err;
+    }
 
     return () => {
       this.subscriptions.unregister(result.subscriptionId);
