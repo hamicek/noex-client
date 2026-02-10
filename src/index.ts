@@ -29,6 +29,7 @@ export type {
   BucketsInfo,
   StoreStats,
   RulesEvent,
+  RulesStats,
   Fact,
   AuthSession,
 } from './types.js';

@@ -107,6 +107,51 @@ export interface Fact {
   readonly version: number;
 }
 
+// ── Rules stats ─────────────────────────────────────────────────
+
+export interface RulesStats {
+  readonly rulesCount: number;
+  readonly factsCount: number;
+  readonly timersCount: number;
+  readonly eventsProcessed: number;
+  readonly rulesExecuted: number;
+  readonly avgProcessingTimeMs: number;
+  readonly tracing?: {
+    readonly enabled: boolean;
+    readonly entriesCount: number;
+    readonly maxEntries: number;
+  };
+  readonly profiling?: {
+    readonly totalRulesProfiled: number;
+    readonly totalTriggers: number;
+    readonly totalExecutions: number;
+    readonly totalTimeMs: number;
+    readonly avgRuleTimeMs: number;
+    readonly slowestRule: { readonly ruleId: string; readonly ruleName: string; readonly avgTimeMs: number } | null;
+    readonly hottestRule: { readonly ruleId: string; readonly ruleName: string; readonly triggerCount: number } | null;
+  };
+  readonly audit?: {
+    readonly totalEntries: number;
+    readonly memoryEntries: number;
+    readonly oldestEntry: number | null;
+    readonly newestEntry: number | null;
+    readonly entriesByCategory: Readonly<Record<string, number>>;
+    readonly subscribersCount: number;
+  };
+  readonly versioning?: {
+    readonly trackedRules: number;
+    readonly totalVersions: number;
+    readonly dirtyRules: number;
+    readonly oldestEntry: number | null;
+    readonly newestEntry: number | null;
+  };
+  readonly baseline?: {
+    readonly metricsCount: number;
+    readonly totalRecalculations: number;
+    readonly anomaliesDetected: number;
+  };
+}
+
 // ── Auth ─────────────────────────────────────────────────────────
 
 export interface AuthSession {

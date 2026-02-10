@@ -1,5 +1,5 @@
 import type { SubscriptionManager } from '../subscription/subscription-manager.js';
-import type { Fact, RulesEvent, SendFn, Unsubscribe } from '../types.js';
+import type { Fact, RulesEvent, RulesStats, SendFn, Unsubscribe } from '../types.js';
 
 export class RulesAPI {
   constructor(
@@ -76,5 +76,11 @@ export class RulesAPI {
   async unsubscribe(subscriptionId: string): Promise<void> {
     this.subscriptions.unregister(subscriptionId);
     await this.send('rules.unsubscribe', { subscriptionId });
+  }
+
+  // ── Stats ──────────────────────────────────────────────────────────
+
+  async stats(): Promise<RulesStats> {
+    return this.send('rules.stats', {}) as Promise<RulesStats>;
   }
 }

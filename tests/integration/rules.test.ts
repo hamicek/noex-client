@@ -316,6 +316,39 @@ describe('Integration: Rules API', () => {
     });
   });
 
+  // ── stats ────────────────────────────────────────────────────────
+
+  describe('stats', () => {
+    it('returns engine statistics', async () => {
+      const stats = await client.rules.stats();
+
+      expect(typeof stats.rulesCount).toBe('number');
+      expect(typeof stats.factsCount).toBe('number');
+      expect(typeof stats.timersCount).toBe('number');
+      expect(typeof stats.eventsProcessed).toBe('number');
+      expect(typeof stats.rulesExecuted).toBe('number');
+      expect(typeof stats.avgProcessingTimeMs).toBe('number');
+    });
+
+    it('reflects facts count after setting facts', async () => {
+      await client.rules.setFact('stat:a', 1);
+      await client.rules.setFact('stat:b', 2);
+
+      const stats = await client.rules.stats();
+      expect(stats.factsCount).toBeGreaterThanOrEqual(2);
+    });
+
+    it('reflects events processed after emitting', async () => {
+      const before = await client.rules.stats();
+
+      await client.rules.emit('stats.test.event', { n: 1 });
+      await client.rules.emit('stats.test.event', { n: 2 });
+
+      const after = await client.rules.stats();
+      expect(after.eventsProcessed).toBe(before.eventsProcessed + 2);
+    });
+  });
+
   // ── rules not available ────────────────────────────────────────
 
   describe('rules not available', () => {
