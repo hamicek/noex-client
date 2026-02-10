@@ -7,6 +7,7 @@ import { DisconnectedError } from './errors.js';
 import { PushRouter } from './protocol/push-router.js';
 import { RequestManager } from './protocol/request-manager.js';
 import { SubscriptionManager } from './subscription/subscription-manager.js';
+import { ReconnectStrategy } from './transport/reconnect.js';
 import { WebSocketTransport } from './transport/transport.js';
 import type { ConnectionState, Unsubscribe, WelcomeInfo, WebSocketConstructor } from './types.js';
 
@@ -15,6 +16,8 @@ import type { ConnectionState, Unsubscribe, WelcomeInfo, WebSocketConstructor } 
 interface ClientEventMap {
   connected: () => void;
   disconnected: (reason: string) => void;
+  reconnecting: (attempt: number) => void;
+  reconnected: () => void;
   error: (error: Error) => void;
   welcome: (info: WelcomeInfo) => void;
 }
@@ -32,9 +35,12 @@ export class NoexClient {
   private readonly requestManager: RequestManager;
   private readonly subscriptionManager: SubscriptionManager;
   private readonly pushRouter: PushRouter;
+  private readonly reconnectStrategy: ReconnectStrategy | null;
   private _state: ConnectionState = 'disconnected';
   private listeners = new Map<string, Set<(...args: never[]) => void>>();
   private intentionalDisconnect = false;
+  private reconnecting = false;
+  private reconnectAbort: (() => void) | null = null;
 
   constructor(url: string, options: ClientOptions = {}) {
     this.url = url;
@@ -57,6 +63,8 @@ export class NoexClient {
     this.pushRouter = new PushRouter(
       (subscriptionId, _channel, data) => this.subscriptionManager.handlePush(subscriptionId, data),
     );
+
+    this.reconnectStrategy = this.createReconnectStrategy();
 
     this.store = new StoreAPI(this.request.bind(this), this.subscriptionManager);
     this.rules = new RulesAPI(this.request.bind(this), this.subscriptionManager);
@@ -81,20 +89,9 @@ export class NoexClient {
     this.intentionalDisconnect = false;
     this._state = 'connecting';
 
-    // Register welcome listener BEFORE connecting — the server sends
-    // the welcome message immediately upon WebSocket open.
-    const welcomePromise = this.waitForWelcome();
-
-    try {
-      await this.transport.connect();
-    } catch (err) {
-      this._state = 'disconnected';
-      throw err;
-    }
-
     let welcome: WelcomeInfo;
     try {
-      welcome = await welcomePromise;
+      welcome = await this.performConnect();
     } catch (err) {
       this._state = 'disconnected';
       throw err;
@@ -114,6 +111,8 @@ export class NoexClient {
 
   async disconnect(): Promise<void> {
     this.intentionalDisconnect = true;
+    this.reconnectAbort?.();
+    this.reconnectAbort = null;
     this.requestManager.rejectAll(new DisconnectedError('Client disconnecting'));
     this.subscriptionManager.clear();
     await this.transport.disconnect();
@@ -174,8 +173,22 @@ export class NoexClient {
           new DisconnectedError('Connection lost'),
         );
       }
-      this._state = 'disconnected';
-      this.emit('disconnected', reason);
+
+      if (!this.intentionalDisconnect && this.reconnectStrategy !== null && !this.reconnecting) {
+        // Start automatic reconnect loop
+        this.reconnecting = true;
+        this.handleReconnect().catch(() => {
+          // Safety net — all error handling is inside handleReconnect
+          this._state = 'disconnected';
+          this.reconnecting = false;
+        });
+      } else if (!this.reconnecting) {
+        // No reconnect — final disconnected state
+        this._state = 'disconnected';
+        this.emit('disconnected', reason);
+      }
+      // If this.reconnecting === true, the loop is already running.
+      // rejectAll above ensures pending requests from the failed attempt are cleaned up.
     });
 
     this.transport.on('error', (error) => {
@@ -196,6 +209,83 @@ export class NoexClient {
 
     // Welcome messages are handled by waitForWelcome via its own listener.
     // System messages are currently ignored.
+  }
+
+  private async performConnect(): Promise<WelcomeInfo> {
+    const welcomePromise = this.waitForWelcome();
+    try {
+      await this.transport.connect();
+    } catch (err) {
+      // Suppress unhandled rejection from the orphaned welcome timeout
+      welcomePromise.catch(() => {});
+      throw err;
+    }
+    return welcomePromise;
+  }
+
+  // ── Reconnect ────────────────────────────────────────────────
+
+  private async handleReconnect(): Promise<void> {
+    this._state = 'reconnecting';
+    let attempt = 0;
+
+    while (!this.intentionalDisconnect) {
+      const delay = this.reconnectStrategy!.getDelay(attempt);
+      if (delay === null) {
+        // Max retries exhausted
+        this._state = 'disconnected';
+        this.reconnecting = false;
+        this.emit('disconnected', 'Max reconnect attempts reached');
+        this.emit('error', new Error('Max reconnect attempts reached'));
+        return;
+      }
+
+      this.emit('reconnecting', attempt + 1);
+      await this.sleepWithAbort(delay);
+
+      if (this.intentionalDisconnect) break;
+
+      try {
+        const welcome = await this.performConnect();
+        if (this.intentionalDisconnect) break;
+
+        this._state = 'connected';
+
+        // Re-authenticate if the server requires auth
+        if (this.options.auth?.token && welcome.requiresAuth) {
+          await this.auth.login(this.options.auth.token);
+        }
+        if (this.intentionalDisconnect) break;
+
+        // Restore all active subscriptions
+        await this.subscriptionManager.resubscribeAll(this.request.bind(this));
+        if (this.intentionalDisconnect) break;
+
+        this.emit('connected');
+        this.emit('reconnected');
+        this.emit('welcome', welcome);
+        this.reconnecting = false;
+        return;
+      } catch {
+        // Connection attempt or setup failed — retry
+        this._state = 'reconnecting';
+        attempt++;
+      }
+    }
+
+    // Reached here because intentionalDisconnect was set
+    this._state = 'disconnected';
+    this.reconnecting = false;
+  }
+
+  private sleepWithAbort(ms: number): Promise<void> {
+    return new Promise<void>(resolve => {
+      const timer = setTimeout(resolve, ms);
+      this.reconnectAbort = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+    });
   }
 
   private waitForWelcome(): Promise<WelcomeInfo> {
@@ -225,6 +315,12 @@ export class NoexClient {
         }
       });
     });
+  }
+
+  private createReconnectStrategy(): ReconnectStrategy | null {
+    if (this.options.reconnect === false) return null;
+    const opts = typeof this.options.reconnect === 'object' ? this.options.reconnect : undefined;
+    return new ReconnectStrategy(opts);
   }
 }
 
