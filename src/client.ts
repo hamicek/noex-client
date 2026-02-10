@@ -1,3 +1,4 @@
+import { RulesAPI } from './api/rules.js';
 import { StoreAPI } from './api/store.js';
 import type { ClientOptions } from './config.js';
 import { DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_REQUEST_TIMEOUT_MS } from './config.js';
@@ -23,6 +24,7 @@ export class NoexClient {
   /** @internal Stored for reconnect logic. */
   readonly url: string;
   readonly store: StoreAPI;
+  readonly rules: RulesAPI;
   private readonly options: ClientOptions;
   private readonly transport: WebSocketTransport;
   private readonly requestManager: RequestManager;
@@ -55,6 +57,7 @@ export class NoexClient {
     );
 
     this.store = new StoreAPI(this.request.bind(this), this.subscriptionManager);
+    this.rules = new RulesAPI(this.request.bind(this), this.subscriptionManager);
 
     this.setupTransportListeners();
   }

@@ -1,5 +1,5 @@
 import type { SubscriptionManager } from '../subscription/subscription-manager.js';
-import type { SendFn, Unsubscribe } from '../types.js';
+import type { SendFn, TransactionOp, TransactionResult, Unsubscribe } from '../types.js';
 import { BucketAPI } from './bucket.js';
 
 export class StoreAPI {
@@ -59,5 +59,11 @@ export class StoreAPI {
   async unsubscribe(subscriptionId: string): Promise<void> {
     this.subscriptions.unregister(subscriptionId);
     await this.send('store.unsubscribe', { subscriptionId });
+  }
+
+  // ── Transactions ───────────────────────────────────────────────
+
+  async transaction(operations: TransactionOp[]): Promise<TransactionResult> {
+    return this.send('store.transaction', { operations } as Record<string, unknown>) as Promise<TransactionResult>;
   }
 }

@@ -6,6 +6,7 @@ export { NoexClient } from './client.js';
 
 export { StoreAPI } from './api/store.js';
 export { BucketAPI } from './api/bucket.js';
+export { RulesAPI } from './api/rules.js';
 
 // ── Config ───────────────────────────────────────────────────────
 
@@ -21,6 +22,10 @@ export type {
   WebSocketConstructor,
   StoreRecord,
   PaginatedResult,
+  TransactionOp,
+  TransactionResult,
+  RulesEvent,
+  Fact,
 } from './types.js';
 
 // ── Errors ───────────────────────────────────────────────────────
