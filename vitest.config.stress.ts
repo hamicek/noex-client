@@ -9,7 +9,7 @@ export default defineConfig({
     hookTimeout: 30_000,
     pool: 'forks',
     poolOptions: {
-      forks: { singleFork: true },
+      forks: { singleFork: true, execArgv: ['--expose-gc'] },
     },
   },
 });
