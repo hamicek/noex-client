@@ -3,6 +3,8 @@ import type {
   BucketDefinition,
   BucketSchemaUpdate,
   BucketsInfo,
+  DeclarativeQueryConfig,
+  QueryInfo,
   SendFn,
   StoreStats,
   TransactionOp,
@@ -116,6 +118,31 @@ export class StoreAPI {
       name: string;
       config: BucketDefinition;
     }>;
+  }
+
+  // ── Query Admin ────────────────────────────────────────────────────
+
+  async defineQuery(
+    name: string,
+    config: DeclarativeQueryConfig,
+  ): Promise<{ name: string; defined: boolean }> {
+    return this.send('store.defineQuery', {
+      name,
+      config: config as unknown as Record<string, unknown>,
+    }) as Promise<{ name: string; defined: boolean }>;
+  }
+
+  async undefineQuery(
+    name: string,
+  ): Promise<{ name: string; undefined: boolean }> {
+    return this.send('store.undefineQuery', { name }) as Promise<{
+      name: string;
+      undefined: boolean;
+    }>;
+  }
+
+  async listQueries(): Promise<{ queries: QueryInfo[] }> {
+    return this.send('store.listQueries', {}) as Promise<{ queries: QueryInfo[] }>;
   }
 
   // ── Metadata ─────────────────────────────────────────────────────

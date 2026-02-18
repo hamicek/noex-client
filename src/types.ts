@@ -322,6 +322,32 @@ export interface BucketSchemaUpdate {
   readonly ttl?: number | string | null;
 }
 
+// ── Declarative Queries ─────────────────────────────────────────
+
+export interface AggregateConfig {
+  readonly function: 'count' | 'sum' | 'avg' | 'min' | 'max';
+  readonly field?: string;
+}
+
+export interface DeclarativeQueryConfig {
+  readonly bucket: string;
+  readonly filter?: Readonly<Record<string, unknown>>;
+  readonly sort?: Readonly<Record<string, 'asc' | 'desc'>>;
+  readonly limit?: number;
+  readonly offset?: number;
+  readonly fields?: readonly string[];
+  readonly aggregate?: AggregateConfig;
+}
+
+export type QueryType = 'programmatic' | 'declarative';
+
+export interface QueryInfo {
+  readonly name: string;
+  readonly type: QueryType;
+  readonly config?: DeclarativeQueryConfig;
+  readonly activeSubscriptions: number;
+}
+
 // ── Internal ──────────────────────────────────────────────────────
 
 export type SendFn = (type: string, payload: Record<string, unknown>) => Promise<unknown>;

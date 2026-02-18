@@ -52,6 +52,10 @@ export type {
   AuthSession,
   AuditEntry,
   AuditQuery,
+  AggregateConfig,
+  DeclarativeQueryConfig,
+  QueryType,
+  QueryInfo,
 } from './types.js';
 
 // ── Errors ───────────────────────────────────────────────────────
