@@ -1,5 +1,16 @@
 import type { SubscriptionManager } from '../subscription/subscription-manager.js';
-import type { Fact, RulesEvent, RulesStats, SendFn, Unsubscribe } from '../types.js';
+import type {
+  Fact,
+  RuleDetail,
+  RuleInfo,
+  RuleInput,
+  RuleSummary,
+  RulesEvent,
+  RulesStats,
+  SendFn,
+  Unsubscribe,
+  ValidationResult,
+} from '../types.js';
 
 export class RulesAPI {
   constructor(
@@ -76,6 +87,57 @@ export class RulesAPI {
   async unsubscribe(subscriptionId: string): Promise<void> {
     this.subscriptions.unregister(subscriptionId);
     await this.send('rules.unsubscribe', { subscriptionId });
+  }
+
+  // ── Admin ──────────────────────────────────────────────────────────
+
+  async registerRule(rule: RuleInput): Promise<RuleInfo> {
+    return this.send('rules.registerRule', {
+      rule: rule as unknown as Record<string, unknown>,
+    }) as Promise<RuleInfo>;
+  }
+
+  async unregisterRule(ruleId: string): Promise<{ ruleId: string; unregistered: boolean }> {
+    return this.send('rules.unregisterRule', { ruleId }) as Promise<{
+      ruleId: string;
+      unregistered: boolean;
+    }>;
+  }
+
+  async updateRule(
+    ruleId: string,
+    updates: Partial<RuleInput>,
+  ): Promise<{ id: string; version: number; updatedAt: number }> {
+    return this.send('rules.updateRule', {
+      ruleId,
+      updates: updates as unknown as Record<string, unknown>,
+    }) as Promise<{ id: string; version: number; updatedAt: number }>;
+  }
+
+  async enableRule(ruleId: string): Promise<{ ruleId: string; enabled: boolean }> {
+    return this.send('rules.enableRule', { ruleId }) as Promise<{
+      ruleId: string;
+      enabled: boolean;
+    }>;
+  }
+
+  async disableRule(ruleId: string): Promise<{ ruleId: string; enabled: boolean }> {
+    return this.send('rules.disableRule', { ruleId }) as Promise<{
+      ruleId: string;
+      enabled: boolean;
+    }>;
+  }
+
+  async getRule(ruleId: string): Promise<RuleDetail> {
+    return this.send('rules.getRule', { ruleId }) as Promise<RuleDetail>;
+  }
+
+  async getRules(): Promise<{ rules: RuleSummary[] }> {
+    return this.send('rules.getRules', {}) as Promise<{ rules: RuleSummary[] }>;
+  }
+
+  async validateRule(rule: Record<string, unknown>): Promise<ValidationResult> {
+    return this.send('rules.validateRule', { rule }) as Promise<ValidationResult>;
   }
 
   // ── Stats ──────────────────────────────────────────────────────────

@@ -152,6 +152,105 @@ export interface RulesStats {
   };
 }
 
+// ── Rules Admin ─────────────────────────────────────────────────
+
+export type RuleTrigger =
+  | { readonly type: 'event'; readonly topic: string }
+  | { readonly type: 'fact'; readonly pattern: string }
+  | { readonly type: 'timer'; readonly name: string }
+  | { readonly type: 'temporal'; readonly pattern: Record<string, unknown> };
+
+export type ConditionOperator =
+  | 'eq' | 'neq'
+  | 'gt' | 'gte' | 'lt' | 'lte'
+  | 'in' | 'not_in'
+  | 'contains' | 'not_contains'
+  | 'matches'
+  | 'exists' | 'not_exists';
+
+export type ConditionSource =
+  | { readonly type: 'fact'; readonly pattern: string }
+  | { readonly type: 'event'; readonly field: string }
+  | { readonly type: 'context'; readonly key: string }
+  | { readonly type: 'lookup'; readonly name: string; readonly field?: string };
+
+export interface RuleCondition {
+  readonly source: ConditionSource;
+  readonly operator: ConditionOperator;
+  readonly value: unknown;
+}
+
+export type RuleAction =
+  | { readonly type: 'set_fact'; readonly key: string; readonly value: unknown }
+  | { readonly type: 'delete_fact'; readonly key: string }
+  | { readonly type: 'emit_event'; readonly topic: string; readonly data?: Record<string, unknown> }
+  | { readonly type: 'set_timer'; readonly timer: Record<string, unknown> }
+  | { readonly type: 'cancel_timer'; readonly name: string }
+  | { readonly type: 'call_service'; readonly service: string; readonly method: string; readonly args?: readonly unknown[] }
+  | { readonly type: 'log'; readonly level: 'debug' | 'info' | 'warn' | 'error'; readonly message: string }
+  | { readonly type: 'conditional'; readonly conditions: readonly RuleCondition[]; readonly then: readonly RuleAction[]; readonly else?: readonly RuleAction[] };
+
+export interface RuleInput {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly priority: number;
+  readonly enabled: boolean;
+  readonly tags: readonly string[];
+  readonly group?: string;
+  readonly trigger: RuleTrigger;
+  readonly conditions: readonly RuleCondition[];
+  readonly actions: readonly RuleAction[];
+  readonly lookups?: readonly Record<string, unknown>[];
+}
+
+export interface RuleInfo {
+  readonly id: string;
+  readonly name: string;
+  readonly version: number;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+export interface RuleSummary {
+  readonly id: string;
+  readonly name: string;
+  readonly enabled: boolean;
+  readonly priority: number;
+  readonly version: number;
+  readonly tags: readonly string[];
+  readonly group?: string;
+}
+
+export interface RuleDetail {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly priority: number;
+  readonly enabled: boolean;
+  readonly version: number;
+  readonly tags: readonly string[];
+  readonly group?: string;
+  readonly trigger: RuleTrigger;
+  readonly conditions: readonly RuleCondition[];
+  readonly actions: readonly RuleAction[];
+  readonly lookups?: readonly Record<string, unknown>[];
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+export interface ValidationIssue {
+  readonly path: string;
+  readonly message: string;
+  readonly severity: 'error' | 'warning';
+}
+
+export interface ValidationResult {
+  readonly valid: boolean;
+  readonly errors: readonly ValidationIssue[];
+  readonly warnings: readonly ValidationIssue[];
+}
+
 // ── Audit ────────────────────────────────────────────────────────
 
 export interface AuditEntry {
