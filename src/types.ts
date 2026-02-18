@@ -152,6 +152,29 @@ export interface RulesStats {
   };
 }
 
+// ── Audit ────────────────────────────────────────────────────────
+
+export interface AuditEntry {
+  readonly timestamp: number;
+  readonly userId: string | null;
+  readonly sessionId: string | null;
+  readonly operation: string;
+  readonly resource: string;
+  readonly result: 'success' | 'error';
+  readonly error?: string;
+  readonly details?: Record<string, unknown>;
+  readonly remoteAddress: string;
+}
+
+export interface AuditQuery {
+  readonly userId?: string;
+  readonly operation?: string;
+  readonly result?: 'success' | 'error';
+  readonly from?: number;
+  readonly to?: number;
+  readonly limit?: number;
+}
+
 // ── Auth ─────────────────────────────────────────────────────────
 
 export interface AuthSession {

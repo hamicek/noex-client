@@ -1,3 +1,4 @@
+import { AuditAPI } from './api/audit.js';
 import { AuthAPI } from './api/auth.js';
 import { RulesAPI } from './api/rules.js';
 import { StoreAPI } from './api/store.js';
@@ -20,6 +21,7 @@ interface ClientEventMap {
   reconnected: () => void;
   error: (error: Error) => void;
   welcome: (info: WelcomeInfo) => void;
+  session_revoked: (reason: string) => void;
 }
 
 // ── NoexClient ───────────────────────────────────────────────────
@@ -30,6 +32,7 @@ export class NoexClient {
   readonly store: StoreAPI;
   readonly rules: RulesAPI;
   readonly auth: AuthAPI;
+  readonly audit: AuditAPI;
   private readonly options: ClientOptions;
   private readonly transport: WebSocketTransport;
   private readonly requestManager: RequestManager;
@@ -69,6 +72,7 @@ export class NoexClient {
     this.store = new StoreAPI(this.request.bind(this), this.subscriptionManager);
     this.rules = new RulesAPI(this.request.bind(this), this.subscriptionManager);
     this.auth = new AuthAPI(this.request.bind(this));
+    this.audit = new AuditAPI(this.request.bind(this));
 
     this.setupTransportListeners();
   }
@@ -208,7 +212,21 @@ export class NoexClient {
     }
 
     // Welcome messages are handled by waitForWelcome via its own listener.
-    // System messages are currently ignored.
+
+    // Handle system messages
+    if (msg['type'] === 'system') {
+      this.handleSystemMessage(msg);
+    }
+  }
+
+  private handleSystemMessage(msg: Record<string, unknown>): void {
+    if (msg['event'] === 'session_revoked') {
+      const reason = typeof msg['reason'] === 'string'
+        ? msg['reason']
+        : 'Session revoked by administrator';
+      this.intentionalDisconnect = true;
+      this.emit('session_revoked', reason);
+    }
   }
 
   private async performConnect(): Promise<WelcomeInfo> {

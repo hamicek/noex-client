@@ -8,6 +8,7 @@ export { StoreAPI } from './api/store.js';
 export { BucketAPI } from './api/bucket.js';
 export { RulesAPI } from './api/rules.js';
 export { AuthAPI } from './api/auth.js';
+export { AuditAPI } from './api/audit.js';
 
 // ── Config ───────────────────────────────────────────────────────
 
@@ -32,6 +33,8 @@ export type {
   RulesStats,
   Fact,
   AuthSession,
+  AuditEntry,
+  AuditQuery,
 } from './types.js';
 
 // ── Errors ───────────────────────────────────────────────────────
