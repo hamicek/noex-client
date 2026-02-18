@@ -1,5 +1,14 @@
 import type { SubscriptionManager } from '../subscription/subscription-manager.js';
-import type { BucketsInfo, SendFn, StoreStats, TransactionOp, TransactionResult, Unsubscribe } from '../types.js';
+import type {
+  BucketDefinition,
+  BucketSchemaUpdate,
+  BucketsInfo,
+  SendFn,
+  StoreStats,
+  TransactionOp,
+  TransactionResult,
+  Unsubscribe,
+} from '../types.js';
 import { BucketAPI } from './bucket.js';
 
 export class StoreAPI {
@@ -72,6 +81,41 @@ export class StoreAPI {
 
   async transaction(operations: TransactionOp[]): Promise<TransactionResult> {
     return this.send('store.transaction', { operations } as Record<string, unknown>) as Promise<TransactionResult>;
+  }
+
+  // ── Admin ──────────────────────────────────────────────────────
+
+  async defineBucket(
+    name: string,
+    config: BucketDefinition,
+  ): Promise<{ name: string; created: boolean }> {
+    return this.send('store.defineBucket', {
+      name,
+      config: config as unknown as Record<string, unknown>,
+    }) as Promise<{ name: string; created: boolean }>;
+  }
+
+  async dropBucket(name: string): Promise<{ name: string; dropped: boolean }> {
+    return this.send('store.dropBucket', { name }) as Promise<{ name: string; dropped: boolean }>;
+  }
+
+  async updateBucket(
+    name: string,
+    updates: BucketSchemaUpdate,
+  ): Promise<{ name: string; updated: boolean }> {
+    return this.send('store.updateBucket', {
+      name,
+      updates: updates as unknown as Record<string, unknown>,
+    }) as Promise<{ name: string; updated: boolean }>;
+  }
+
+  async getBucketSchema(
+    name: string,
+  ): Promise<{ name: string; config: BucketDefinition }> {
+    return this.send('store.getBucketSchema', { name }) as Promise<{
+      name: string;
+      config: BucketDefinition;
+    }>;
   }
 
   // ── Metadata ─────────────────────────────────────────────────────

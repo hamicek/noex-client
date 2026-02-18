@@ -184,6 +184,45 @@ export interface AuthSession {
   readonly expiresAt?: number;
 }
 
+// ── Store Admin ─────────────────────────────────────────────────
+
+export type FieldType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'date';
+
+export type GeneratedType = 'uuid' | 'cuid' | 'autoincrement' | 'timestamp';
+
+export type FormatType = 'email' | 'url' | 'iso-date';
+
+export interface FieldDefinition {
+  readonly type: FieldType;
+  readonly required?: boolean;
+  readonly default?: unknown;
+  readonly generated?: GeneratedType;
+  readonly enum?: readonly unknown[];
+  readonly format?: FormatType;
+  readonly min?: number;
+  readonly max?: number;
+  readonly minLength?: number;
+  readonly maxLength?: number;
+  readonly pattern?: string;
+  readonly ref?: string;
+  readonly unique?: boolean;
+}
+
+export interface BucketDefinition {
+  readonly key?: string;
+  readonly schema: Readonly<Record<string, FieldDefinition>>;
+  readonly indexes?: readonly string[];
+  readonly ttl?: number | string;
+  readonly persistent?: boolean;
+  readonly maxSize?: number;
+}
+
+export interface BucketSchemaUpdate {
+  readonly addFields?: Readonly<Record<string, FieldDefinition>>;
+  readonly addIndexes?: readonly string[];
+  readonly ttl?: number | string | null;
+}
+
 // ── Internal ──────────────────────────────────────────────────────
 
 export type SendFn = (type: string, payload: Record<string, unknown>) => Promise<unknown>;
