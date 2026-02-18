@@ -348,6 +348,156 @@ export interface QueryInfo {
   readonly activeSubscriptions: number;
 }
 
+// ── Procedures ──────────────────────────────────────────────────────
+
+export interface InputFieldDef {
+  readonly type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  readonly required?: boolean;
+  readonly default?: unknown;
+}
+
+// ── Procedure Steps ─────────────────────────────────────────────────
+
+export interface StoreGetStep {
+  readonly action: 'store.get';
+  readonly bucket: string;
+  readonly key: string;
+  readonly as: string;
+}
+
+export interface StoreWhereStep {
+  readonly action: 'store.where';
+  readonly bucket: string;
+  readonly filter: Readonly<Record<string, unknown>>;
+  readonly as: string;
+}
+
+export interface StoreFindOneStep {
+  readonly action: 'store.findOne';
+  readonly bucket: string;
+  readonly filter: Readonly<Record<string, unknown>>;
+  readonly as: string;
+}
+
+export interface StoreInsertStep {
+  readonly action: 'store.insert';
+  readonly bucket: string;
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly as?: string;
+}
+
+export interface StoreUpdateStep {
+  readonly action: 'store.update';
+  readonly bucket: string;
+  readonly key: string;
+  readonly data: Readonly<Record<string, unknown>>;
+  readonly as?: string;
+}
+
+export interface StoreDeleteStep {
+  readonly action: 'store.delete';
+  readonly bucket: string;
+  readonly key: string;
+}
+
+export interface StoreCountStep {
+  readonly action: 'store.count';
+  readonly bucket: string;
+  readonly filter?: Readonly<Record<string, unknown>>;
+  readonly as: string;
+}
+
+export interface ProcedureAggregateStep {
+  readonly action: 'aggregate';
+  readonly source: string;
+  readonly field: string;
+  readonly op: 'sum' | 'avg' | 'min' | 'max' | 'count';
+  readonly as: string;
+}
+
+export interface RulesEmitStep {
+  readonly action: 'rules.emit';
+  readonly topic: string;
+  readonly data?: Readonly<Record<string, unknown>>;
+}
+
+export interface RulesSetFactStep {
+  readonly action: 'rules.setFact';
+  readonly key: string;
+  readonly value: unknown;
+}
+
+export interface RulesGetFactStep {
+  readonly action: 'rules.getFact';
+  readonly key: string;
+  readonly as: string;
+}
+
+export type ProcedureConditionOperator =
+  | 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte'
+  | 'exists' | 'not_exists';
+
+export interface ConditionStep {
+  readonly action: 'if';
+  readonly condition: {
+    readonly ref: string;
+    readonly operator: ProcedureConditionOperator;
+    readonly value?: unknown;
+  };
+  readonly then: readonly ProcedureStep[];
+  readonly else?: readonly ProcedureStep[];
+}
+
+export interface TransformStep {
+  readonly action: 'transform';
+  readonly source: string;
+  readonly operation: 'map' | 'filter' | 'pick' | 'pluck';
+  readonly args: unknown;
+  readonly as: string;
+}
+
+export interface ReturnStep {
+  readonly action: 'return';
+  readonly value: unknown;
+}
+
+export type ProcedureStep =
+  | StoreGetStep
+  | StoreWhereStep
+  | StoreFindOneStep
+  | StoreInsertStep
+  | StoreUpdateStep
+  | StoreDeleteStep
+  | StoreCountStep
+  | ProcedureAggregateStep
+  | RulesEmitStep
+  | RulesSetFactStep
+  | RulesGetFactStep
+  | ConditionStep
+  | TransformStep
+  | ReturnStep;
+
+export interface ProcedureConfig {
+  readonly name: string;
+  readonly description?: string;
+  readonly input?: Readonly<Record<string, InputFieldDef>>;
+  readonly steps: readonly ProcedureStep[];
+  readonly transaction?: boolean;
+  readonly timeoutMs?: number;
+}
+
+export interface ProcedureResult {
+  readonly success: boolean;
+  readonly result?: unknown;
+  readonly results: Readonly<Record<string, unknown>>;
+}
+
+export interface ProcedureSummary {
+  readonly name: string;
+  readonly description: string | undefined;
+  readonly stepsCount: number;
+}
+
 // ── Internal ──────────────────────────────────────────────────────
 
 export type SendFn = (type: string, payload: Record<string, unknown>) => Promise<unknown>;

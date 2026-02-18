@@ -9,6 +9,7 @@ export { BucketAPI } from './api/bucket.js';
 export { RulesAPI } from './api/rules.js';
 export { AuthAPI } from './api/auth.js';
 export { AuditAPI } from './api/audit.js';
+export { ProceduresAPI } from './api/procedures.js';
 
 // ── Config ───────────────────────────────────────────────────────
 
@@ -56,6 +57,26 @@ export type {
   DeclarativeQueryConfig,
   QueryType,
   QueryInfo,
+  InputFieldDef,
+  StoreGetStep,
+  StoreWhereStep,
+  StoreFindOneStep,
+  StoreInsertStep,
+  StoreUpdateStep,
+  StoreDeleteStep,
+  StoreCountStep,
+  ProcedureAggregateStep,
+  RulesEmitStep,
+  RulesSetFactStep,
+  RulesGetFactStep,
+  ProcedureConditionOperator,
+  ConditionStep,
+  TransformStep,
+  ReturnStep,
+  ProcedureStep,
+  ProcedureConfig,
+  ProcedureResult,
+  ProcedureSummary,
 } from './types.js';
 
 // ── Errors ───────────────────────────────────────────────────────

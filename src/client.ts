@@ -1,5 +1,6 @@
 import { AuditAPI } from './api/audit.js';
 import { AuthAPI } from './api/auth.js';
+import { ProceduresAPI } from './api/procedures.js';
 import { RulesAPI } from './api/rules.js';
 import { StoreAPI } from './api/store.js';
 import type { ClientOptions } from './config.js';
@@ -33,6 +34,7 @@ export class NoexClient {
   readonly rules: RulesAPI;
   readonly auth: AuthAPI;
   readonly audit: AuditAPI;
+  readonly procedures: ProceduresAPI;
   private readonly options: ClientOptions;
   private readonly transport: WebSocketTransport;
   private readonly requestManager: RequestManager;
@@ -73,6 +75,7 @@ export class NoexClient {
     this.rules = new RulesAPI(this.request.bind(this), this.subscriptionManager);
     this.auth = new AuthAPI(this.request.bind(this));
     this.audit = new AuditAPI(this.request.bind(this));
+    this.procedures = new ProceduresAPI(this.request.bind(this));
 
     this.setupTransportListeners();
   }
