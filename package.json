@@ -19,6 +19,7 @@
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
     "test:stress": "vitest run --config vitest.config.stress.ts",
+    "examples": "vitest run --config examples/vitest.config.ts",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
