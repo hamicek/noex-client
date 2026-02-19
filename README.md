@@ -27,6 +27,7 @@ Requires Node.js >= 20. No peer dependencies. For Node.js usage, install `ws` se
 ```typescript
 import { NoexClient } from '@hamicek/noex-client';
 
+// Use wss:// in production (see Production section below)
 const client = new NoexClient('ws://localhost:8080');
 await client.connect();
 
@@ -411,6 +412,23 @@ Reconnect is enabled by default. When the connection drops unexpectedly:
 5. If max retries are exhausted, the client enters `'disconnected'` state
 
 Calling `disconnect()` at any point stops the reconnect loop immediately.
+
+---
+
+## Production
+
+### TLS / WSS
+
+The noex-server itself listens on plain `ws://`. In production, terminate TLS at a reverse proxy (nginx, Caddy, etc.) and connect with `wss://`:
+
+```typescript
+const client = new NoexClient('wss://api.example.com');
+await client.connect();
+```
+
+No client-side configuration is needed beyond changing the URL scheme — the underlying WebSocket implementation handles TLS transparently.
+
+See the [noex-server Production Considerations](https://github.com/hamicek/noex-server#production-considerations) for a reverse proxy configuration example.
 
 ---
 
