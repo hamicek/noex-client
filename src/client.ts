@@ -1,5 +1,6 @@
 import { AuditAPI } from './api/audit.js';
 import { AuthAPI } from './api/auth.js';
+import { IdentityAPI } from './api/identity.js';
 import { ProceduresAPI } from './api/procedures.js';
 import { RulesAPI } from './api/rules.js';
 import { StoreAPI } from './api/store.js';
@@ -35,6 +36,7 @@ export class NoexClient {
   readonly auth: AuthAPI;
   readonly audit: AuditAPI;
   readonly procedures: ProceduresAPI;
+  readonly identity: IdentityAPI;
   private readonly options: ClientOptions;
   private readonly transport: WebSocketTransport;
   private readonly requestManager: RequestManager;
@@ -46,6 +48,8 @@ export class NoexClient {
   private intentionalDisconnect = false;
   private reconnecting = false;
   private reconnectAbort: (() => void) | null = null;
+  /** Session token saved after credential-based login, used for reconnect. */
+  private _sessionToken: string | null = null;
 
   constructor(url: string, options: ClientOptions = {}) {
     this.url = url;
@@ -76,6 +80,7 @@ export class NoexClient {
     this.auth = new AuthAPI(this.request.bind(this));
     this.audit = new AuditAPI(this.request.bind(this));
     this.procedures = new ProceduresAPI(this.request.bind(this));
+    this.identity = new IdentityAPI(this.request.bind(this));
 
     this.setupTransportListeners();
   }
@@ -106,8 +111,8 @@ export class NoexClient {
 
     this._state = 'connected';
 
-    if (this.options.auth?.token && welcome.requiresAuth) {
-      await this.auth.login(this.options.auth.token);
+    if (welcome.requiresAuth) {
+      await this.autoLogin();
     }
 
     this.emit('connected');
@@ -244,6 +249,34 @@ export class NoexClient {
     return welcomePromise;
   }
 
+  // ── Auto-login ──────────────────────────────────────────────
+
+  private async autoLogin(): Promise<void> {
+    // 1. If we have a saved session token from a previous credential login, try it first
+    if (this._sessionToken !== null) {
+      try {
+        await this.auth.login(this._sessionToken);
+        return;
+      } catch {
+        // Session expired or invalid — fall through to credential login
+        this._sessionToken = null;
+      }
+    }
+
+    // 2. Static token from options (legacy external auth)
+    if (this.options.auth?.token) {
+      await this.auth.login(this.options.auth.token);
+      return;
+    }
+
+    // 3. Credential-based login (built-in identity)
+    if (this.options.auth?.credentials) {
+      const { username, password } = this.options.auth.credentials;
+      const result = await this.identity.login(username, password);
+      this._sessionToken = result.token;
+    }
+  }
+
   // ── Reconnect ────────────────────────────────────────────────
 
   private async handleReconnect(): Promise<void> {
@@ -273,8 +306,8 @@ export class NoexClient {
         this._state = 'connected';
 
         // Re-authenticate if the server requires auth
-        if (this.options.auth?.token && welcome.requiresAuth) {
-          await this.auth.login(this.options.auth.token);
+        if (welcome.requiresAuth) {
+          await this.autoLogin();
         }
         if (this.intentionalDisconnect) break;
 

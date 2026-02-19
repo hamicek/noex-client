@@ -9,6 +9,7 @@ export { BucketAPI } from './api/bucket.js';
 export { RulesAPI } from './api/rules.js';
 export { AuthAPI } from './api/auth.js';
 export { AuditAPI } from './api/audit.js';
+export { IdentityAPI } from './api/identity.js';
 export { ProceduresAPI } from './api/procedures.js';
 
 // ── Config ───────────────────────────────────────────────────────
@@ -77,6 +78,22 @@ export type {
   ProcedureConfig,
   ProcedureResult,
   ProcedureSummary,
+  IdentityLoginResult,
+  IdentityUserInfo,
+  IdentityCreateUserInput,
+  IdentityUpdateUserInput,
+  IdentityListUsersResult,
+  IdentityRolePermission,
+  IdentityRoleInfo,
+  IdentityCreateRoleInput,
+  IdentityUpdateRoleInput,
+  IdentityAclSubjectType,
+  IdentityAclResourceType,
+  IdentityGrantInput,
+  IdentityRevokeInput,
+  IdentityAclEntry,
+  IdentityOwnerInfo,
+  IdentityEffectiveAccess,
 } from './types.js';
 
 // ── Errors ───────────────────────────────────────────────────────

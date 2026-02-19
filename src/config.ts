@@ -14,7 +14,13 @@ export interface ReconnectOptions {
 
 export interface ClientOptions {
   readonly auth?: {
-    readonly token: string;
+    /** Session token for auto-login (legacy external auth or identity session token). */
+    readonly token?: string;
+    /** Username/password credentials for built-in identity auto-login. */
+    readonly credentials?: {
+      readonly username: string;
+      readonly password: string;
+    };
   };
   readonly reconnect?: boolean | ReconnectOptions;
   readonly requestTimeoutMs?: number;

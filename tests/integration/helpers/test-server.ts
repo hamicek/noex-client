@@ -1,6 +1,6 @@
 import { Store } from '@hamicek/noex-store';
 import { NoexServer } from '@hamicek/noex-server';
-import type { AuthConfig, AuditConfig, BackpressureConfig, RateLimitConfig, RevocationConfig } from '@hamicek/noex-server';
+import type { AuthConfig, BuiltInAuthConfig, AuditConfig, BackpressureConfig, RateLimitConfig, RevocationConfig } from '@hamicek/noex-server';
 import type { RuleEngine } from '@hamicek/noex-rules';
 
 export interface TestServerContext {
@@ -19,7 +19,7 @@ export async function startTestServer(
     port?: number;
     buckets?: Array<{ name: string; schema: Record<string, unknown> }>;
     rules?: RuleEngine;
-    auth?: AuthConfig;
+    auth?: AuthConfig | BuiltInAuthConfig;
     audit?: AuditConfig;
     revocation?: RevocationConfig;
     backpressure?: BackpressureConfig;

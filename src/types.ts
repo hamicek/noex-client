@@ -498,6 +498,127 @@ export interface ProcedureSummary {
   readonly stepsCount: number;
 }
 
+// ── Identity ─────────────────────────────────────────────────────
+
+export interface IdentityLoginResult {
+  readonly token: string;
+  readonly expiresAt: number;
+  readonly user: {
+    readonly id: string;
+    readonly username: string;
+    readonly displayName?: string;
+    readonly roles: readonly string[];
+  };
+}
+
+export interface IdentityUserInfo {
+  readonly id: string;
+  readonly username: string;
+  readonly displayName?: string;
+  readonly email?: string;
+  readonly enabled: boolean;
+  readonly metadata?: Record<string, unknown>;
+  readonly _createdAt: number;
+  readonly _updatedAt: number;
+}
+
+export interface IdentityCreateUserInput {
+  readonly username: string;
+  readonly password: string;
+  readonly displayName?: string;
+  readonly email?: string;
+  readonly enabled?: boolean;
+  readonly metadata?: Record<string, unknown>;
+}
+
+export interface IdentityUpdateUserInput {
+  readonly displayName?: string | null;
+  readonly email?: string | null;
+  readonly metadata?: Record<string, unknown> | null;
+}
+
+export interface IdentityListUsersResult {
+  readonly users: readonly IdentityUserInfo[];
+  readonly total: number;
+  readonly page: number;
+  readonly pageSize: number;
+}
+
+export interface IdentityRolePermission {
+  readonly allow: string | readonly string[];
+  readonly buckets?: readonly string[];
+  readonly topics?: readonly string[];
+}
+
+export interface IdentityRoleInfo {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly system: boolean;
+  readonly permissions: readonly IdentityRolePermission[];
+  readonly _createdAt: number;
+  readonly _updatedAt: number;
+}
+
+export interface IdentityCreateRoleInput {
+  readonly name: string;
+  readonly description?: string;
+  readonly permissions?: readonly IdentityRolePermission[];
+}
+
+export interface IdentityUpdateRoleInput {
+  readonly description?: string;
+  readonly permissions?: readonly IdentityRolePermission[];
+}
+
+export type IdentityAclSubjectType = 'user' | 'role';
+export type IdentityAclResourceType = 'bucket' | 'topic' | 'procedure' | 'query';
+
+export interface IdentityGrantInput {
+  readonly subjectType: IdentityAclSubjectType;
+  readonly subjectId: string;
+  readonly resourceType: IdentityAclResourceType;
+  readonly resourceName: string;
+  readonly operations: readonly string[];
+}
+
+export interface IdentityRevokeInput {
+  readonly subjectType: IdentityAclSubjectType;
+  readonly subjectId: string;
+  readonly resourceType: IdentityAclResourceType;
+  readonly resourceName: string;
+  readonly operations?: readonly string[];
+}
+
+export interface IdentityAclEntry {
+  readonly subjectType: IdentityAclSubjectType;
+  readonly subjectId: string;
+  readonly subjectName: string;
+  readonly operations: readonly string[];
+  readonly isOwner: boolean;
+}
+
+export interface IdentityOwnerInfo {
+  readonly userId: string;
+  readonly username: string;
+  readonly resourceType: IdentityAclResourceType;
+  readonly resourceName: string;
+}
+
+export interface IdentityEffectiveAccess {
+  readonly user: {
+    readonly id: string;
+    readonly username: string;
+    readonly roles: readonly string[];
+  };
+  readonly resources: ReadonlyArray<{
+    readonly resourceType: IdentityAclResourceType;
+    readonly resourceName: string;
+    readonly operations: readonly string[];
+    readonly isOwner: boolean;
+  }>;
+}
+
 // ── Internal ──────────────────────────────────────────────────────
 
 export type SendFn = (type: string, payload: Record<string, unknown>) => Promise<unknown>;
