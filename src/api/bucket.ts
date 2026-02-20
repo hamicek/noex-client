@@ -34,6 +34,37 @@ export class BucketAPI<T extends Record<string, unknown> = Record<string, unknow
     await this.send('store.delete', { bucket: this.bucketName, key });
   }
 
+  // ── Bulk ────────────────────────────────────────────────────────
+
+  async insertMany(data: Omit<T, keyof RecordMeta>[]): Promise<(T & RecordMeta)[]> {
+    return this.send('store.insertMany', {
+      bucket: this.bucketName,
+      data: data as Record<string, unknown>[],
+    }) as Promise<(T & RecordMeta)[]>;
+  }
+
+  async updateMany(filter: BucketFilter<T>, changes: Partial<Omit<T, keyof RecordMeta>>): Promise<number> {
+    return this.send('store.updateMany', {
+      bucket: this.bucketName,
+      filter: filter as WhereFilter,
+      data: changes as Record<string, unknown>,
+    }) as Promise<number>;
+  }
+
+  async deleteMany(filter: BucketFilter<T>): Promise<number> {
+    return this.send('store.deleteMany', {
+      bucket: this.bucketName,
+      filter: filter as WhereFilter,
+    }) as Promise<number>;
+  }
+
+  async upsert(data: Record<string, unknown>): Promise<T & RecordMeta> {
+    return this.send('store.upsert', {
+      bucket: this.bucketName,
+      data,
+    }) as Promise<T & RecordMeta>;
+  }
+
   // ── Queries ─────────────────────────────────────────────────────
 
   async all(): Promise<(T & RecordMeta)[]> {

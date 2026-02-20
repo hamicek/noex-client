@@ -83,7 +83,11 @@ export type TransactionOp =
   | { readonly op: 'delete'; readonly bucket: string; readonly key: unknown }
   | { readonly op: 'where'; readonly bucket: string; readonly filter: WhereFilter }
   | { readonly op: 'findOne'; readonly bucket: string; readonly filter: WhereFilter }
-  | { readonly op: 'count'; readonly bucket: string; readonly filter?: WhereFilter };
+  | { readonly op: 'count'; readonly bucket: string; readonly filter?: WhereFilter }
+  | { readonly op: 'insertMany'; readonly bucket: string; readonly data: readonly Record<string, unknown>[] }
+  | { readonly op: 'updateMany'; readonly bucket: string; readonly filter: WhereFilter; readonly data: Record<string, unknown> }
+  | { readonly op: 'deleteMany'; readonly bucket: string; readonly filter: WhereFilter }
+  | { readonly op: 'upsert'; readonly bucket: string; readonly data: Record<string, unknown> };
 
 export interface TransactionResult {
   readonly results: ReadonlyArray<{ readonly index: number; readonly data: unknown }>;
