@@ -41,6 +41,39 @@ export interface PaginatedResult<T extends Record<string, unknown> = Record<stri
   readonly nextCursor?: unknown;
 }
 
+// ── Filter Operators ─────────────────────────────────────────────
+
+export interface FilterOperators {
+  readonly $eq?: unknown;
+  readonly $neq?: unknown;
+  readonly $gt?: number | string;
+  readonly $gte?: number | string;
+  readonly $lt?: number | string;
+  readonly $lte?: number | string;
+  readonly $in?: readonly unknown[];
+  readonly $nin?: readonly unknown[];
+  readonly $contains?: string;
+  readonly $startsWith?: string;
+  readonly $endsWith?: string;
+  readonly $exists?: boolean;
+  readonly $between?: readonly [number | string, number | string];
+}
+
+export type FilterValue = unknown | FilterOperators;
+
+export interface WhereFilter {
+  readonly $or?: readonly WhereFilter[];
+  readonly $and?: readonly WhereFilter[];
+  readonly [field: string]: FilterValue;
+}
+
+export type BucketFilter<T extends Record<string, unknown> = Record<string, unknown>> = {
+  readonly [K in keyof T]?: T[K] | FilterOperators;
+} & {
+  readonly $or?: readonly BucketFilter<T>[];
+  readonly $and?: readonly BucketFilter<T>[];
+};
+
 // ── Transactions ─────────────────────────────────────────────────
 
 export type TransactionOp =
@@ -48,9 +81,9 @@ export type TransactionOp =
   | { readonly op: 'insert'; readonly bucket: string; readonly data: Record<string, unknown> }
   | { readonly op: 'update'; readonly bucket: string; readonly key: unknown; readonly data: Record<string, unknown> }
   | { readonly op: 'delete'; readonly bucket: string; readonly key: unknown }
-  | { readonly op: 'where'; readonly bucket: string; readonly filter: Record<string, unknown> }
-  | { readonly op: 'findOne'; readonly bucket: string; readonly filter: Record<string, unknown> }
-  | { readonly op: 'count'; readonly bucket: string; readonly filter?: Record<string, unknown> };
+  | { readonly op: 'where'; readonly bucket: string; readonly filter: WhereFilter }
+  | { readonly op: 'findOne'; readonly bucket: string; readonly filter: WhereFilter }
+  | { readonly op: 'count'; readonly bucket: string; readonly filter?: WhereFilter };
 
 export interface TransactionResult {
   readonly results: ReadonlyArray<{ readonly index: number; readonly data: unknown }>;
@@ -331,7 +364,7 @@ export interface AggregateConfig {
 
 export interface DeclarativeQueryConfig {
   readonly bucket: string;
-  readonly filter?: Readonly<Record<string, unknown>>;
+  readonly filter?: Readonly<WhereFilter>;
   readonly sort?: Readonly<Record<string, 'asc' | 'desc'>>;
   readonly limit?: number;
   readonly offset?: number;
@@ -368,14 +401,14 @@ export interface StoreGetStep {
 export interface StoreWhereStep {
   readonly action: 'store.where';
   readonly bucket: string;
-  readonly filter: Readonly<Record<string, unknown>>;
+  readonly filter: Readonly<WhereFilter>;
   readonly as: string;
 }
 
 export interface StoreFindOneStep {
   readonly action: 'store.findOne';
   readonly bucket: string;
-  readonly filter: Readonly<Record<string, unknown>>;
+  readonly filter: Readonly<WhereFilter>;
   readonly as: string;
 }
 
@@ -403,7 +436,7 @@ export interface StoreDeleteStep {
 export interface StoreCountStep {
   readonly action: 'store.count';
   readonly bucket: string;
-  readonly filter?: Readonly<Record<string, unknown>>;
+  readonly filter?: Readonly<WhereFilter>;
   readonly as: string;
 }
 

@@ -1,4 +1,4 @@
-import type { PaginatedResult, RecordMeta, SendFn } from '../types.js';
+import type { BucketFilter, PaginatedResult, RecordMeta, SendFn, WhereFilter } from '../types.js';
 
 export class BucketAPI<T extends Record<string, unknown> = Record<string, unknown>> {
   constructor(
@@ -40,21 +40,21 @@ export class BucketAPI<T extends Record<string, unknown> = Record<string, unknow
     return this.send('store.all', { bucket: this.bucketName }) as Promise<(T & RecordMeta)[]>;
   }
 
-  async where(filter: Partial<T>): Promise<(T & RecordMeta)[]> {
+  async where(filter: BucketFilter<T>): Promise<(T & RecordMeta)[]> {
     return this.send('store.where', {
       bucket: this.bucketName,
-      filter: filter as Record<string, unknown>,
+      filter: filter as WhereFilter,
     }) as Promise<(T & RecordMeta)[]>;
   }
 
-  async findOne(filter: Partial<T>): Promise<(T & RecordMeta) | null> {
+  async findOne(filter: BucketFilter<T>): Promise<(T & RecordMeta) | null> {
     return this.send('store.findOne', {
       bucket: this.bucketName,
-      filter: filter as Record<string, unknown>,
+      filter: filter as WhereFilter,
     }) as Promise<(T & RecordMeta) | null>;
   }
 
-  async count(filter?: Partial<T>): Promise<number> {
+  async count(filter?: BucketFilter<T>): Promise<number> {
     const payload: Record<string, unknown> = { bucket: this.bucketName };
     if (filter !== undefined) payload['filter'] = filter;
     return this.send('store.count', payload) as Promise<number>;
@@ -76,25 +76,25 @@ export class BucketAPI<T extends Record<string, unknown> = Record<string, unknow
 
   // ── Aggregation ─────────────────────────────────────────────────
 
-  async sum(field: string, filter?: Partial<T>): Promise<number> {
+  async sum(field: string, filter?: BucketFilter<T>): Promise<number> {
     const payload: Record<string, unknown> = { bucket: this.bucketName, field };
     if (filter !== undefined) payload['filter'] = filter;
     return this.send('store.sum', payload) as Promise<number>;
   }
 
-  async avg(field: string, filter?: Partial<T>): Promise<number> {
+  async avg(field: string, filter?: BucketFilter<T>): Promise<number> {
     const payload: Record<string, unknown> = { bucket: this.bucketName, field };
     if (filter !== undefined) payload['filter'] = filter;
     return this.send('store.avg', payload) as Promise<number>;
   }
 
-  async min(field: string, filter?: Partial<T>): Promise<number | null> {
+  async min(field: string, filter?: BucketFilter<T>): Promise<number | null> {
     const payload: Record<string, unknown> = { bucket: this.bucketName, field };
     if (filter !== undefined) payload['filter'] = filter;
     return this.send('store.min', payload) as Promise<number | null>;
   }
 
-  async max(field: string, filter?: Partial<T>): Promise<number | null> {
+  async max(field: string, filter?: BucketFilter<T>): Promise<number | null> {
     const payload: Record<string, unknown> = { bucket: this.bucketName, field };
     if (filter !== undefined) payload['filter'] = filter;
     return this.send('store.max', payload) as Promise<number | null>;
