@@ -26,6 +26,16 @@ interface ClientEventMap {
   session_revoked: (reason: string) => void;
 }
 
+// ── Non-retryable close codes ────────────────────────────────────
+// Server-sent close codes that indicate a permanent rejection.
+// Reconnecting would just result in the same close, so we skip it.
+
+const NON_RETRYABLE_CLOSE_CODES = new Set([
+  1003, // Unsupported Data (binary frame rejection)
+  4002, // session_revoked
+  4003, // too_many_connections
+]);
+
 // ── NoexClient ───────────────────────────────────────────────────
 
 export class NoexClient {
@@ -179,11 +189,17 @@ export class NoexClient {
       this.handleMessage(msg);
     });
 
-    this.transport.on('close', (_code, reason) => {
+    this.transport.on('close', (code, reason) => {
       if (!this.intentionalDisconnect) {
         this.requestManager.rejectAll(
           new DisconnectedError('Connection lost'),
         );
+      }
+
+      if (NON_RETRYABLE_CLOSE_CODES.has(code)) {
+        this._state = 'disconnected';
+        this.emit('disconnected', reason);
+        return;
       }
 
       if (!this.intentionalDisconnect && this.reconnectStrategy !== null && !this.reconnecting) {
