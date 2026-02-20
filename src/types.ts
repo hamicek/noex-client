@@ -361,9 +361,17 @@ export interface BucketSchemaUpdate {
 
 // ── Declarative Queries ─────────────────────────────────────────
 
+export type AggregateFunction = 'count' | 'sum' | 'avg' | 'min' | 'max';
+
 export interface AggregateConfig {
-  readonly function: 'count' | 'sum' | 'avg' | 'min' | 'max';
+  readonly function: AggregateFunction;
   readonly field?: string;
+  readonly groupBy?: string | readonly string[];
+}
+
+export interface GroupByResult {
+  readonly key: Record<string, unknown>;
+  readonly value: number;
 }
 
 export interface DeclarativeQueryConfig {

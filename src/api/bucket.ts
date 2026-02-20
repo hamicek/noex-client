@@ -1,4 +1,4 @@
-import type { BucketFilter, PaginatedResult, RecordMeta, SendFn, WhereFilter } from '../types.js';
+import type { AggregateFunction, BucketFilter, GroupByResult, PaginatedResult, RecordMeta, SendFn, WhereFilter } from '../types.js';
 
 export class BucketAPI<T extends Record<string, unknown> = Record<string, unknown>> {
   constructor(
@@ -129,6 +129,16 @@ export class BucketAPI<T extends Record<string, unknown> = Record<string, unknow
     const payload: Record<string, unknown> = { bucket: this.bucketName, field };
     if (filter !== undefined) payload['filter'] = filter;
     return this.send('store.max', payload) as Promise<number | null>;
+  }
+
+  async groupBy(
+    field: string | string[],
+    aggregate: { function: AggregateFunction; field?: string },
+    filter?: BucketFilter<T>,
+  ): Promise<GroupByResult[]> {
+    const payload: Record<string, unknown> = { bucket: this.bucketName, field, aggregate };
+    if (filter !== undefined) payload['filter'] = filter;
+    return this.send('store.groupBy', payload) as Promise<GroupByResult[]>;
   }
 
   // ── Bulk ────────────────────────────────────────────────────────
