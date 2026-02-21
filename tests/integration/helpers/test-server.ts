@@ -2,11 +2,13 @@ import { Store } from '@hamicek/noex-store';
 import { NoexServer } from '@hamicek/noex-server';
 import type { AuthConfig, BuiltInAuthConfig, AuditConfig, BackpressureConfig, RateLimitConfig, RevocationConfig } from '@hamicek/noex-server';
 import type { RuleEngine } from '@hamicek/noex-rules';
+import type { Logic } from '@hamicek/noex-logic';
 
 export interface TestServerContext {
   server: NoexServer;
   store: Store;
   rules?: RuleEngine;
+  logic?: Logic;
   url: string;
   port: number;
   stop: () => Promise<void>;
@@ -19,6 +21,7 @@ export async function startTestServer(
     port?: number;
     buckets?: Array<{ name: string; schema: Record<string, unknown> }>;
     rules?: RuleEngine;
+    logic?: Logic;
     auth?: AuthConfig | BuiltInAuthConfig;
     audit?: AuditConfig;
     revocation?: RevocationConfig;
@@ -43,6 +46,7 @@ export async function startTestServer(
   const server = await NoexServer.start({
     store,
     rules: options?.rules,
+    logic: options?.logic,
     auth: options?.auth,
     audit: options?.audit,
     revocation: options?.revocation,
@@ -59,6 +63,7 @@ export async function startTestServer(
     server,
     store,
     rules: options?.rules,
+    logic: options?.logic,
     url,
     port,
     async stop() {

@@ -664,6 +664,75 @@ export interface IdentityEffectiveAccess {
   }>;
 }
 
+// ── Logic ─────────────────────────────────────────────────────────
+
+/** Expression — a literal, field reference ($field), or operator. */
+export type Expression =
+  | number
+  | string
+  | boolean
+  | null
+  | ExpressionOperator;
+
+/** Operator — an object with exactly one $-prefixed key. */
+export type ExpressionOperator = {
+  readonly [key: `$${string}`]: Expression | readonly Expression[];
+};
+
+export interface ComputedFieldDefinition {
+  readonly depends: readonly string[];
+  readonly expr: Expression;
+}
+
+export interface ComputedFieldsConfig {
+  readonly bucket: string;
+  readonly fields: Record<string, ComputedFieldDefinition>;
+}
+
+export interface OrderBySpec {
+  readonly field: string;
+  readonly direction?: 'asc' | 'desc';
+}
+
+export interface DerivedViewDefinition {
+  readonly name: string;
+  readonly from: Record<string, string>;
+  readonly join?: Record<string, string>;
+  readonly where?: Record<string, unknown>;
+  readonly groupBy?: string | readonly string[];
+  readonly select: Record<string, string | Expression>;
+  readonly reactive?: boolean;
+  readonly orderBy?: readonly OrderBySpec[];
+  readonly limit?: number;
+}
+
+export interface DerivedViewInfo {
+  readonly name: string;
+  readonly from: Record<string, string>;
+  readonly reactive: boolean;
+  readonly resultCount: number;
+}
+
+export interface DerivedViewExplanation {
+  readonly name: string;
+  readonly sources: Record<string, string>;
+  readonly joins: Record<string, string>;
+  readonly filters: Record<string, unknown>;
+  readonly groupBy: readonly string[];
+  readonly select: Record<string, string | Expression>;
+  readonly dependencies: readonly string[];
+}
+
+export interface ConstraintDefinition {
+  readonly name: string;
+  readonly on: string;
+  readonly expr: Expression;
+  readonly message: string;
+  readonly scope?: 'record' | 'group';
+  readonly groupBy?: string;
+  readonly operations?: readonly ('insert' | 'update' | 'delete')[];
+}
+
 // ── Internal ──────────────────────────────────────────────────────
 
 export type SendFn = (type: string, payload: Record<string, unknown>) => Promise<unknown>;

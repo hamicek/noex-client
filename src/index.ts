@@ -7,6 +7,7 @@ export { NoexClient } from './client.js';
 export { StoreAPI } from './api/store.js';
 export { BucketAPI } from './api/bucket.js';
 export { RulesAPI } from './api/rules.js';
+export { LogicAPI } from './api/logic.js';
 export { AuthAPI } from './api/auth.js';
 export { AuditAPI } from './api/audit.js';
 export { IdentityAPI } from './api/identity.js';
@@ -100,7 +101,20 @@ export type {
   IdentityAclEntry,
   IdentityOwnerInfo,
   IdentityEffectiveAccess,
+  Expression,
+  ExpressionOperator,
+  ComputedFieldDefinition,
+  ComputedFieldsConfig,
+  OrderBySpec,
+  DerivedViewDefinition,
+  DerivedViewInfo,
+  DerivedViewExplanation,
+  ConstraintDefinition,
 } from './types.js';
+
+// ── Logic Helpers ────────────────────────────────────────────────
+
+export { expr } from './logic/index.js';
 
 // ── Errors ───────────────────────────────────────────────────────
 

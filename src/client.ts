@@ -1,6 +1,7 @@
 import { AuditAPI } from './api/audit.js';
 import { AuthAPI } from './api/auth.js';
 import { IdentityAPI } from './api/identity.js';
+import { LogicAPI } from './api/logic.js';
 import { ProceduresAPI } from './api/procedures.js';
 import { RulesAPI } from './api/rules.js';
 import { StoreAPI } from './api/store.js';
@@ -43,6 +44,7 @@ export class NoexClient {
   readonly url: string;
   readonly store: StoreAPI;
   readonly rules: RulesAPI;
+  readonly logic: LogicAPI;
   readonly auth: AuthAPI;
   readonly audit: AuditAPI;
   readonly procedures: ProceduresAPI;
@@ -87,6 +89,7 @@ export class NoexClient {
 
     this.store = new StoreAPI(this.request.bind(this), this.subscriptionManager);
     this.rules = new RulesAPI(this.request.bind(this), this.subscriptionManager);
+    this.logic = new LogicAPI(this.request.bind(this), this.subscriptionManager);
     this.auth = new AuthAPI(this.request.bind(this));
     this.audit = new AuditAPI(this.request.bind(this));
     this.procedures = new ProceduresAPI(this.request.bind(this));
