@@ -107,6 +107,17 @@ Nastavte testy a ověřte real-time chování.
 | [10.1 Nastavení testů](./10-testovani/01-nastaveni-testu.md) | Vitest, testovací server, port: 0, cleanup |
 | [10.2 Testovací vzory](./10-testovani/02-testovaci-vzory.md) | Testování subscriptions, reconnectu, auth, edge cases |
 
+### Část 12: Integrace logic
+
+Použití logic enginu pro vypočítané položky, pohledy, omezení a výrazy.
+
+| Kapitola | Popis |
+|----------|-------|
+| [12.1 Nastavení](./12-logic/01-nastaveni.md) | `client.logic` namespace, `expr` helper, požadavky na server |
+| [12.2 Vypočítané položky](./12-logic/02-vypocitane-polozky.md) | defineComputed, dropComputed, listComputed, integrace se store |
+| [12.3 Pohledy a omezení](./12-logic/03-pohledy-a-omezeni.md) | defineView, queryView, defineConstraint, porušení omezení |
+| [12.4 Odběry pohledů](./12-logic/04-odbery-pohledu.md) | subscribeView, evaluateExpr, expr helper, reconnect recovery |
+
 ### Část 11: Projekty
 
 Aplikujte vše v reálných projektech.

@@ -107,6 +107,17 @@ Set up tests and verify real-time behavior.
 | [10.1 Test Setup](./10-testing/01-test-setup.md) | Vitest, test server, port: 0, cleanup |
 | [10.2 Testing Patterns](./10-testing/02-testing-patterns.md) | Testing subscriptions, reconnect, auth, edge cases |
 
+### Part 12: Logic Integration
+
+Use the logic engine for computed fields, views, constraints, and expressions.
+
+| Chapter | Description |
+|---------|-------------|
+| [12.1 Setup](./12-logic/01-setup.md) | `client.logic` namespace, `expr` helper, server requirements |
+| [12.2 Computed Fields](./12-logic/02-computed-fields.md) | defineComputed, dropComputed, listComputed, store integration |
+| [12.3 Views and Constraints](./12-logic/03-views-and-constraints.md) | defineView, queryView, defineConstraint, constraint violations |
+| [12.4 View Subscriptions](./12-logic/04-view-subscriptions.md) | subscribeView, evaluateExpr, expr helper, reconnect recovery |
+
 ### Part 11: Projects
 
 Apply everything in real-world projects.

@@ -19,6 +19,7 @@ Kompletní API reference pro `@hamicek/noex-client`. Každá třída, metoda, ty
 | [Store Subscriptions](./05-store-subscriptions.md) | Reaktivní subscripce dotazů — počáteční data, push aktualizace, obnova při reconnectu |
 | [Rules API](./06-rules-api.md) | Pravidlový engine — události, fakty, subscripce událostí v reálném čase |
 | [Auth API](./07-auth-api.md) | Autentizace — přihlášení, odhlášení, dotaz na session, auto-login |
+| [Logic API](./11-logic-api.md) | Logic engine — vypočítané položky, pohledy, omezení, výrazy, `expr` helper |
 
 ## Infrastruktura
 

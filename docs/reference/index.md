@@ -19,6 +19,7 @@ Complete API reference for `@hamicek/noex-client`. Every class, method, type, an
 | [Store Subscriptions](./05-store-subscriptions.md) | Reactive query subscriptions — initial data, push updates, reconnect recovery |
 | [Rules API](./06-rules-api.md) | Rule engine — events, facts, real-time event subscriptions |
 | [Auth API](./07-auth-api.md) | Authentication — login, logout, session query, auto-login |
+| [Logic API](./11-logic-api.md) | Logic engine — computed fields, views, constraints, expressions, `expr` helper |
 
 ## Infrastructure
 
