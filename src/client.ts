@@ -25,6 +25,7 @@ interface ClientEventMap {
   error: (error: Error) => void;
   welcome: (info: WelcomeInfo) => void;
   session_revoked: (reason: string) => void;
+  push: (channel: string, data: unknown) => void;
 }
 
 // ── Non-retryable close codes ────────────────────────────────────
@@ -83,6 +84,7 @@ export class NoexClient {
 
     this.pushRouter = new PushRouter(
       (subscriptionId, _channel, data) => this.subscriptionManager.handlePush(subscriptionId, data),
+      (channel, data) => this.emit('push', channel, data),
     );
 
     this.reconnectStrategy = this.createReconnectStrategy();

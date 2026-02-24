@@ -31,17 +31,53 @@ describe('PushRouter', () => {
     expect(onPush).not.toHaveBeenCalled();
   });
 
-  it('returns false when subscriptionId is missing', () => {
+  it('routes to onCustomPush when subscriptionId is null', () => {
+    const onPush = vi.fn();
+    const onCustomPush = vi.fn();
+    const router = new PushRouter(onPush, onCustomPush);
+
+    const handled = router.handleMessage({
+      type: 'push',
+      channel: 'game',
+      subscriptionId: null,
+      data: { move: 'e2e4' },
+    });
+
+    expect(handled).toBe(true);
+    expect(onPush).not.toHaveBeenCalled();
+    expect(onCustomPush).toHaveBeenCalledOnce();
+    expect(onCustomPush).toHaveBeenCalledWith('game', { move: 'e2e4' });
+  });
+
+  it('routes to onCustomPush when subscriptionId is undefined', () => {
+    const onPush = vi.fn();
+    const onCustomPush = vi.fn();
+    const router = new PushRouter(onPush, onCustomPush);
+
+    const handled = router.handleMessage({
+      type: 'push',
+      channel: 'notification',
+      data: [],
+    });
+
+    expect(handled).toBe(true);
+    expect(onPush).not.toHaveBeenCalled();
+    expect(onCustomPush).toHaveBeenCalledOnce();
+    expect(onCustomPush).toHaveBeenCalledWith('notification', []);
+  });
+
+  it('silently handles custom push when onCustomPush is not provided', () => {
     const onPush = vi.fn();
     const router = new PushRouter(onPush);
 
     const handled = router.handleMessage({
       type: 'push',
-      channel: 'subscription',
-      data: [],
+      channel: 'game',
+      subscriptionId: null,
+      data: {},
     });
 
-    expect(handled).toBe(false);
+    expect(handled).toBe(true);
     expect(onPush).not.toHaveBeenCalled();
   });
 
